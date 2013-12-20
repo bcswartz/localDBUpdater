@@ -1,0 +1,6 @@
+.idea
+bin
+localDBUpdater.iml
+src/lastRevision.log
+src/localDBUpdater.log
+out
