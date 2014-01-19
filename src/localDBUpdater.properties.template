@@ -1,0 +1,7 @@
+svn {
+    root = 'http://subversionServer/repositoryRoot'
+    relativeScriptPath = '/trunkOrBranchName/directory/with/Database/Scripts'
+    localWorkingCopyPath = 'C:\\rootDirectoryOfLocalWorkingCopy'
+}
+
+editor = 'notepad'

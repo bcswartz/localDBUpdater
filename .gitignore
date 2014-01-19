@@ -3,4 +3,5 @@ bin
 localDBUpdater.iml
 src/lastRevision.log
 src/localDBUpdater.log
+src/localDBUpdater.properties
 out
