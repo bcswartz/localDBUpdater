@@ -3,7 +3,7 @@ Local Database Updater
 
 This is a Groovy program that will execute newly added or updated database scripts based on a target repository and directory.  It is written specifically for Subversion and SQL Server.
 
-Before first run you will need to update the configuration in localDBUpdater.properties with your own settings.
+Before first run you will need to copy localDBUpdater.properties.template to localDBUpdater.properties and update the configuration with your own settings.
 
 On first run a file named lastRevision.log will be created and will store the HEAD revision number of your repository.  Not much else happens on this first run.
 
