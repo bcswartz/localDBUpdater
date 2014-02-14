@@ -10,13 +10,13 @@ def svnUtil = new SubversionUtil()
 def localDBUpdater = new LocalDBUpdater()
 
 def now = new Date().toTimestamp()
-localDBUpdaterLog.appendText( "START: $now\n\n" )
+localDBUpdaterLog.appendText( "START: $now\r\n\r\n" )
 
 // Get HEAD revision
 def headRevision = svnUtil.getHeadRevision( config.svn.localWorkingCopyPath );
 
 if( headRevision == -1 ){
-    localDBUpdaterLog.appendText( 'Invalid HEAD revision returned. Process aborted.\n' ).saveText()
+    localDBUpdaterLog.appendText( 'Invalid HEAD revision returned. Process aborted.\r\n' ).saveText()
     return      // abort
 }
 
@@ -29,13 +29,13 @@ if( lastRevision == '' ){
 }
 
 if( lastRevision == headRevision ){
-    localDBUpdaterLog.appendText( "Last revision executed and HEAD revision are the same (r$headRevision). Nothing to update.\n\n" )
+    localDBUpdaterLog.appendText( "Last revision executed and HEAD revision are the same (r$headRevision). Nothing to update.\r\n\r\n" )
 } else {
     // Check for new scripts
     fromRevision = lastRevision.toInteger() + 1     // bump up to next revision since 'svn log' is inclusive
-    localDBUpdaterLog.appendText( "Checking revisions r$fromRevision:$headRevision...\n" )
+    localDBUpdaterLog.appendText( "Checking revisions r$fromRevision:$headRevision...\r\n" )
     def scriptsToExecute = svnUtil.getScriptsToExecute( config.svn.localWorkingCopyPath, config.svn.relativeScriptPath, fromRevision, headRevision  )
-    localDBUpdaterLog.appendText( "Scripts to execute: $scriptsToExecute.size\n\n" )
+    localDBUpdaterLog.appendText( "Scripts to execute: $scriptsToExecute.size\r\n\r\n" )
 
     // Iterate over scripts to execute
     scriptsToExecute.each { svnExportURL ->
@@ -45,9 +45,9 @@ if( lastRevision == headRevision ){
 
         if( tempScriptFilePath != '' ){
             // Execute script
-            localDBUpdaterLog.appendText( '-='.multiply(50) + '\n' )
-            localDBUpdaterLog.appendText( "EXECUTE: $tempScriptFilePath\n" )
-            localDBUpdaterLog.appendText( localDBUpdater.executeScript( tempScriptFilePath ) + '\n' )
+            localDBUpdaterLog.appendText( '-='.multiply(50) + '\r\n' )
+            localDBUpdaterLog.appendText( "EXECUTE: $tempScriptFilePath\r\n" )
+            localDBUpdaterLog.appendText( localDBUpdater.executeScript( tempScriptFilePath ) + '\r\n' )
 
             // remove temp script
             new File( tempScriptFilePath ).delete()
@@ -56,7 +56,7 @@ if( lastRevision == headRevision ){
 }
 
 now = new Date().toTimestamp()
-localDBUpdaterLog.appendText( "END: $now\n" )
+localDBUpdaterLog.appendText( "END: $now\r\n" )
 localDBUpdaterLog.saveText()
 
 lastRevisionLog.appendText( headRevision )
