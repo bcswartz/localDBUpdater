@@ -102,8 +102,8 @@ class SubversionUtil {
 
     static String exportScript( svnRoot, svnExportURL ){
         def svnExportPrepend = "svn export --force $svnRoot/"
-        def svnExportAppend = ' C:\\temp'
-        (svnExportPrepend + svnExportURL + svnExportAppend).execute().getText()   // execute svn export
+        def svnExportAppend = System.getProperty('java.io.tmpdir')
+        (svnExportPrepend + svnExportURL + ' ' + svnExportAppend).execute().getText()   // execute svn export
     }
 
 }
