@@ -87,17 +87,13 @@ class SubversionUtil {
 		def svnLogOutput = "svn log -v --xml $localWorkingCopyPath -r$fromRevision:$toRevision".execute().getText()   // execute svn log
 		def svnLogXml = new XmlSlurper().parseText( svnLogOutput )
 
-		svnLogXml.logentry.each {
-			it.paths.each {
-				it.path.each {  // iterate over each script path.
-					String kind = it.@kind
-					String action = it.@action
+		svnLogXml.logentry.paths.path.each {	// iterate over each script path.
+			String kind = it.@kind
+			String action = it.@action
 
-					// locate added/modified SQL scripts.
-					if (kind == 'file' && (action == 'A' || action == 'M')) {
-						relativeScriptFilePattern.matcher( it.text() ).each { scriptsToExecute.add( it ) }
-					}
-				}
+			// locate added/modified SQL scripts.
+			if (kind == 'file' && (action == 'A' || action == 'M')) {
+				relativeScriptFilePattern.matcher(it.text()).each { scriptsToExecute.add(it) }
 			}
 		}
 
