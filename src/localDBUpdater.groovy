@@ -103,7 +103,8 @@ class SubversionUtil {
 	static String exportScript( svnRoot, svnExportURL ){
 		def svnExportPrepend = "svn export --force $svnRoot/"
 		def svnExportAppend = System.getProperty('java.io.tmpdir')
-		(svnExportPrepend + svnExportURL + ' ' + svnExportAppend).execute().getText()   // execute svn export
+		// Enclose script name in double-quotes to handle any spaces in filename
+		(svnExportPrepend + "\"$svnExportURL\" " + svnExportAppend).execute().getText()   // execute svn export
 	}
 
 }
@@ -142,7 +143,8 @@ class Logger {
 class LocalDBUpdater {
 	static String executeScript( scriptFilePath ){
 		def sqlCommandPrepend = 'sqlcmd -S localhost -r0 -i '
-		def sqlCommand = sqlCommandPrepend + scriptFilePath
+		// Enclose script name in double-quotes to handle any spaces in filename
+		def sqlCommand = sqlCommandPrepend + "\"$scriptFilePath\""
 		println "EXECUTING: $scriptFilePath"
 		sqlCommand.execute().getText()	  // execute sqlcmd
 	}
