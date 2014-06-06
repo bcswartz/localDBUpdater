@@ -14,10 +14,10 @@ localDBUpdaterLog.appendText( "START: $now\r\n\r\n" )
 def headRevision = SubversionUtil.getHeadRevision( config.svn.localWorkingCopyPath );
 
 if( headRevision == null ){
-	localDBUpdaterLog.appendText( 'Invalid HEAD revision returned. Process aborted.\r\n' )
-	localDBUpdaterLog.saveText()
-	LocalDBUpdater.viewLogInEditor( localDBUpdaterLog, config.editor )
-	return	  // abort
+    localDBUpdaterLog.appendText( 'Invalid HEAD revision returned. Process aborted.\r\n' )
+    localDBUpdaterLog.saveText()
+    LocalDBUpdater.viewLogInEditor( localDBUpdaterLog, config.editor )
+    return      // abort
 }
 
 println "HEAD revision: $headRevision"
@@ -26,35 +26,35 @@ println "HEAD revision: $headRevision"
 lastRevision = lastRevisionLog.getText()
 
 if( lastRevision == '' ){
-	// should only hit on first run
-	lastRevision = headRevision
+    // should only hit on first run
+    lastRevision = headRevision
 }
 
 if( lastRevision == headRevision ){
-	localDBUpdaterLog.appendText( "Last revision executed and HEAD revision are the same (r$headRevision). Nothing to update.\r\n\r\n" )
+    localDBUpdaterLog.appendText( "Last revision executed and HEAD revision are the same (r$headRevision). Nothing to update.\r\n\r\n" )
 } else {
-	// Check for new scripts
-	fromRevision = lastRevision.toInteger() + 1	 // bump up to next revision since 'svn log' is inclusive
-	localDBUpdaterLog.appendText( "Checking revisions r$fromRevision:$headRevision...\r\n" )
-	def scriptsToExecute = SubversionUtil.getScriptsToExecute( config.svn.localWorkingCopyPath, config.svn.relativeScriptPath, fromRevision, headRevision  )
-	localDBUpdaterLog.appendText( "Number of scripts added/updated: $scriptsToExecute.size\r\n\r\n" )
+    // Check for new scripts
+    fromRevision = lastRevision.toInteger() + 1     // bump up to next revision since 'svn log' is inclusive
+    localDBUpdaterLog.appendText( "Checking revisions r$fromRevision:$headRevision...\r\n" )
+    def scriptsToExecute = SubversionUtil.getScriptsToExecute( config.svn.localWorkingCopyPath, config.svn.relativeScriptPath, fromRevision, headRevision  )
+    localDBUpdaterLog.appendText( "Number of scripts added/updated: $scriptsToExecute.size\r\n\r\n" )
 
-	// Iterate over scripts to execute
-	scriptsToExecute.each { svnExportURL ->
-		// Fetch script to temp location
-		def fetchedScriptOutput = SubversionUtil.exportScript( config.svn.root, svnExportURL );
-		def tempScriptFilePath = LocalDBUpdater.extractLocalFilePath( fetchedScriptOutput )
+    // Iterate over scripts to execute
+    scriptsToExecute.each { svnExportURL ->
+        // Fetch script to temp location
+        def fetchedScriptOutput = SubversionUtil.exportScript( config.svn.root, svnExportURL );
+        def tempScriptFilePath = LocalDBUpdater.extractLocalFilePath( fetchedScriptOutput )
 
-		if( tempScriptFilePath != '' ){
-			// Execute script
-			localDBUpdaterLog.appendText( '-='.multiply(50) + '\r\n' )
-			localDBUpdaterLog.appendText( "EXECUTE: $tempScriptFilePath\r\n" )
-			localDBUpdaterLog.appendText( LocalDBUpdater.executeScript( tempScriptFilePath ) + '\r\n' )
+        if( tempScriptFilePath != '' ){
+            // Execute script
+            localDBUpdaterLog.appendText( '-='.multiply(50) + '\r\n' )
+            localDBUpdaterLog.appendText( "EXECUTE: $tempScriptFilePath\r\n" )
+            localDBUpdaterLog.appendText( LocalDBUpdater.executeScript( tempScriptFilePath ) + '\r\n' )
 
-			// remove temp script
-			new File( tempScriptFilePath ).delete()
-		}
-	}
+            // remove temp script
+            new File( tempScriptFilePath ).delete()
+        }
+    }
 }
 
 now = new Date().toTimestamp()
@@ -73,89 +73,91 @@ LocalDBUpdater.viewLogInEditor( localDBUpdaterLog, config.editor )
 // Class defs
 class SubversionUtil {
 
-	static def getHeadRevision( String localWorkingCopyPath ){
-		def svnInfoOutput = "svn info $localWorkingCopyPath -rHEAD --xml".execute().getText()	 // execute svn info
-		def svnInfoXml = new XmlSlurper().parseText( svnInfoOutput )
-		svnInfoXml.entry.@revision.text()
-	}
+    static def getHeadRevision( String localWorkingCopyPath ){
+        def svnInfoOutput = "svn info $localWorkingCopyPath -rHEAD --xml".execute().getText()     // execute svn info
+        def svnInfoXml = new XmlSlurper().parseText( svnInfoOutput )
+        svnInfoXml.entry.@revision.text()
+    }
 
-	// Get a list of all unique scripts that have been added/modified
-	static def getScriptsToExecute( String localWorkingCopyPath, String svnScriptPath, fromRevision, toRevision ){
-		Set scriptsToExecute = []
-		def relativeScriptFilePattern = ~/$svnScriptPath.+sql$/
+    // Get a list of all unique scripts that have been added/modified
+    static def getScriptsToExecute( String localWorkingCopyPath, String svnScriptPath, fromRevision, toRevision ){
+        Set scriptsToExecute = []
+        def relativeScriptFilePattern = ~/$svnScriptPath.+sql$/
 
-		def svnLogOutput = "svn log -v --xml $localWorkingCopyPath -r$fromRevision:$toRevision".execute().getText()   // execute svn log
-		def svnLogXml = new XmlSlurper().parseText( svnLogOutput )
+        def svnLogOutput = "svn log -v --xml $localWorkingCopyPath -r$fromRevision:$toRevision".execute().getText()   // execute svn log
+        def svnLogXml = new XmlSlurper().parseText( svnLogOutput )
 
-		svnLogXml.logentry.paths.path.each {	// iterate over each script path.
-			String kind = it.@kind
-			String action = it.@action
+        svnLogXml.logentry.paths.path.each {    // iterate over each script path.
+            String kind = it.@kind
+            String action = it.@action
 
-			// locate added/modified SQL scripts.
-			if (kind == 'file' && (action == 'A' || action == 'M')) {
-				relativeScriptFilePattern.matcher(it.text()).each { scriptsToExecute.add(it) }
-			}
-		}
+            // locate added/modified SQL scripts.
+            if (kind == 'file' && (action == 'A' || action == 'M')) {
+                relativeScriptFilePattern.matcher(it.text()).each { scriptsToExecute.add(it) }
+            }
+        }
 
-		scriptsToExecute.sort()
-	}
+        scriptsToExecute.sort()
+    }
 
-	static String exportScript( svnRoot, svnExportURL ){
-		def svnExportPrepend = "svn export --force $svnRoot/"
-		def svnExportAppend = System.getProperty('java.io.tmpdir')
-		(svnExportPrepend + svnExportURL + ' ' + svnExportAppend).execute().getText()   // execute svn export
-	}
+    static String exportScript( svnRoot, svnExportURL ){
+        def svnExportPrepend = "svn export --force $svnRoot/"
+        def svnExportAppend = System.getProperty('java.io.tmpdir')
+        // Enclose script name in double-quotes to handle any spaces in filename
+        (svnExportPrepend + "\"$svnExportURL\" " + svnExportAppend).execute().getText()   // execute svn export
+    }
 
 }
 
 class Logger {
-	private String logFileName
-	private String logText = ''
+    private String logFileName
+    private String logText = ''
 
-	Logger( String theLogFileName ){
-		logFileName = theLogFileName
-	}
+    Logger( String theLogFileName ){
+        logFileName = theLogFileName
+    }
 
-	Boolean appendText( theLogText ){
-		logText += theLogText
-		true
-	}
+    Boolean appendText( theLogText ){
+        logText += theLogText
+        true
+    }
 
-	def getText(){
-		def response = ''
-		def logFile = new File( logFileName )
+    def getText(){
+        def response = ''
+        def logFile = new File( logFileName )
 
-		if( logFile.exists() ){
-			response = logFile.getText().trim()
-		}
+        if( logFile.exists() ){
+            response = logFile.getText().trim()
+        }
 
-		response
-	}
+        response
+    }
 
-	// Write logText to file
-	Boolean saveText(){
-		new File( logFileName ).setText( logText )
-		true
-	}
+    // Write logText to file
+    Boolean saveText(){
+        new File( logFileName ).setText( logText )
+        true
+    }
 }
 
 class LocalDBUpdater {
-	static String executeScript( scriptFilePath ){
-		def sqlCommandPrepend = 'sqlcmd -S localhost -r0 -i '
-		def sqlCommand = sqlCommandPrepend + scriptFilePath
-		println "EXECUTING: $scriptFilePath"
-		sqlCommand.execute().getText()	  // execute sqlcmd
-	}
+    static String executeScript( scriptFilePath ){
+        def sqlCommandPrepend = 'sqlcmd -S localhost -r0 -i '
+         // Enclose script name in double-quotes to handle any spaces in filename
+        def sqlCommand = sqlCommandPrepend + "\"$scriptFilePath\""
+        println "EXECUTING: $scriptFilePath"
+        sqlCommand.execute().getText()      // execute sqlcmd
+    }
 
-	static String extractLocalFilePath( fetchedScriptOutput ){
-		def filePath = ''
-		def localFilePattern = ~/C:\\.*sql/
-		localFilePattern.matcher( fetchedScriptOutput ).each { filePath = it }
-		filePath
-	}
+    static String extractLocalFilePath( fetchedScriptOutput ){
+        def filePath = ''
+        def localFilePattern = ~/C:\\.*sql/
+        localFilePattern.matcher( fetchedScriptOutput ).each { filePath = it }
+        filePath
+    }
 
-	static def viewLogInEditor( Logger log, String editor = 'notepad' ) {
-		"$editor $log.logFileName".execute()
-	}
+    static def viewLogInEditor( Logger log, String editor = 'notepad' ) {
+        "$editor $log.logFileName".execute()
+    }
 
 }
