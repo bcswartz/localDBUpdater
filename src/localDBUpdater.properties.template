@@ -4,4 +4,14 @@ svn {
     localWorkingCopyPath = 'C:\\rootDirectoryOfLocalWorkingCopy'
 }
 
+
+
+history {
+
+    keepHistory = false
+
+    historyDirectoryName = 'logFiles'
+
+}
+
 editor = 'notepad'
